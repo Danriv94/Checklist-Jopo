@@ -104,20 +104,42 @@
         });
 
         function login() {
-            const username = document.getElementById("login-username").value;
-            const password = document.getElementById("login-password").value;
+    // Obtiene los valores del nombre de usuario y la contraseña
+    const username = document.getElementById("login-username").value;
+    const password = document.getElementById("login-password").value;
 
-            if (users[username] && users[username].password === password) {
-                currentUser = username;
-                isAdmin = users[username].isAdmin || false;
-                toggleSections(true);
-                loadChecklistForUser(username);
-                if (isAdmin) {
-                    showAdminPanel();
-                } else {
-                    hideAdminPanel();
-                }
-                return;
+    // Verifica si el usuario existe y si la contraseña es correcta
+    if (users[username] && users[username].password === password) {
+        currentUser = username;
+        isAdmin = users[username].isAdmin || false;
+        
+        // Cambia las secciones para mostrar el checklist y ocultar el login
+        toggleSections(true);
+        
+        // Carga el checklist para el usuario actual
+        loadChecklistForUser(username);
+        
+        // Muestra o oculta el panel de administración según el rol del usuario
+        if (isAdmin) {
+            showAdminPanel();
+        } else {
+            hideAdminPanel();
+        }
+    } else {
+        alert("Credenciales incorrectas. Intenta nuevamente.");
+    }
+}
+
+// Inicialización de usuarios en localStorage si es necesario
+if (!localStorage.getItem("users")) {
+    // Crea el usuario admin solo si `users` no existe en localStorage
+    users["admin"] = { password: "Admin#2414", isAdmin: true, tasks: [] };
+    localStorage.setItem("users", JSON.stringify(users));
+} else {
+    // Si `users` ya está en localStorage, lo carga al inicio
+    users = JSON.parse(localStorage.getItem("users"));
+}
+
             }
 
             alert("Credenciales incorrectas. Intenta nuevamente.");
