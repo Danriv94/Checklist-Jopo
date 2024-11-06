@@ -143,6 +143,40 @@
                 task.comment = commentField.value;
                 localStorage.setItem("users", JSON.stringify(users));
             }
+            function sendReport() {
+    if (!currentUser) {
+        alert("Por favor, inicie sesión para generar un reporte.");
+        return;
+    }
+
+    const userTasks = users[currentUser]?.tasks || [];
+    const completedTasks = userTasks.filter(task => task.completed);
+
+    if (completedTasks.length === 0) {
+        alert("No hay tareas completadas para generar un reporte.");
+        return;
+    }
+
+    let reportContent = `<h3>Reporte de tareas completadas por ${currentUser}</h3><ul>`;
+
+    completedTasks.forEach(task => {
+        reportContent += `
+            <li>
+                <strong>Tarea:</strong> ${task.taskName} <br>
+                <strong>Comentario:</strong> ${task.comment || "Sin comentarios"} 
+            </li>
+        `;
+    });
+
+    reportContent += "</ul>";
+
+    // Mostrar el reporte en la interfaz
+    const reportDiv = document.getElementById("reports");
+    reportDiv.innerHTML = reportContent;
+
+    alert("Reporte generado exitosamente.");
+}
+
         }
 
         function clearChecklist() {
