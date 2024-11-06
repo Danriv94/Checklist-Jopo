@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checklist por Usuario</title>
+    <title>Checklist del Usuario</title>
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: Oswald, sans-serif; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh; 
-            background-color: #f4f4f4; 
+            background-color: #bb8fce; 
             margin: 0; 
         }
      .container { 
             width: 100%; 
             max-width: 600px; 
             padding: 20px; 
-            background-color: white; 
-            border-radius: 8px; 
+            background-color: grey; 
+            border-radius: 6px; 
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
 }
 
@@ -27,8 +27,8 @@
         h1, h3 { text-align: center; }
         ul { list-style: none; padding: 0; }
         li { margin: 10px 0; display: flex; align-items: center; flex-wrap: wrap; }
-        .button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; margin-top: 10px; width: 100%; }
-        .button:hover { background-color: #45a049; }
+        .button { padding: 10px 20px; background-color: #85c1e9; color: white; border: none; cursor: hand; margin-top: 10px; width: 50%; }
+        .button:hover { background-color: #5499c7; }
         #login-section { display: flex; flex-direction: column; align-items: center; }
         #checklist-container { display: none; }
        .task-item, .edit-field {
@@ -39,7 +39,7 @@
 }
 
         .comment-field { width: 100%; margin-left: 10px; margin-top: 5px; }
-        .task-checkbox { width: 40px; height: 40px; margin-right: 10px; }
+        .task-checkbox { width: 30px; height: 30px; margin-right: 10px; }
         .report { margin-top: 20px; cursor: pointer; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
         .report-details { display: none; margin-top: 10px; font-size: 14px; }
         #admin-panel { margin-top: 20px; display: none; }
