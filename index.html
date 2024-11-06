@@ -150,6 +150,24 @@
         task.comment = commentField.value;  // Guarda el comentario
         localStorage.setItem("users", JSON.stringify(users));  // Actualiza localStorage
     }
+          function clearChecklist() {
+    // Obtiene todos los checkboxes y los campos de comentarios en el checklist
+    const checkboxes = document.querySelectorAll(".task-checkbox");
+    const commentFields = document.querySelectorAll(".comment-field");
+
+    // Desmarca todos los checkboxes y limpia todos los campos de comentarios
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+    commentFields.forEach(commentField => commentField.value = "");
+
+    // También podrías vaciar las tareas en `users[currentUser].tasks` si deseas
+    if (users[currentUser]) {
+        users[currentUser].tasks.forEach(task => {
+            task.completed = false;
+            task.comment = "";
+        });
+        // Actualiza en localStorage para reflejar los cambios
+        localStorage.setItem("users", JSON.stringify(users));
+    }
 }
 
 
@@ -276,31 +294,42 @@
         }
 
         function sendReport() {
-            const report = users[currentUser].tasks.map(task => ({
-                taskName: task.taskName,
-                completed: task.completed,
-                comment: task.comment || ""
-            }));
+    // Genera el reporte con las tareas actuales del usuario
+    const report = users[currentUser].tasks.map(task => ({
+        taskName: task.taskName,
+        completed: task.completed,
+        comment: task.comment || ""
+    }));
 
-            const reportButton = document.createElement("div");
-            const dateTime = new Date().toLocaleString();
-            reportButton.className = "report";
-            reportButton.innerText = `Reporte generado el ${dateTime}`;
-            reportButton.onclick = () => {
-                reportDetailsContainer.style.display = reportDetailsContainer.style.display === "none" ? "block" : "none";
-            };
+    // Crea el botón para mostrar el reporte
+    const reportButton = document.createElement("div");
+    const dateTime = new Date().toLocaleString();
+    reportButton.className = "report";
+    reportButton.innerText = `Reporte generado el ${dateTime}`;
+    reportButton.onclick = () => {
+        reportDetailsContainer.style.display = reportDetailsContainer.style.display === "none" ? "block" : "none";
+    };
 
-            const reportDetailsContainer = document.createElement("div");
-            reportDetailsContainer.className = "report-details";
-            report.forEach(({ taskName, completed, comment }) => {
-                const detail = document.createElement("div");
-                detail.innerHTML = `<strong>${taskName}:</strong> ${completed ? "Completado" : "Pendiente"}<br>Comentario: ${comment}`;
-                reportDetailsContainer.appendChild(detail);
-            });
+    // Contenedor de detalles del reporte
+    const reportDetailsContainer = document.createElement("div");
+    reportDetailsContainer.className = "report-details";
+    report.forEach(({ taskName, completed, comment }) => {
+        const detail = document.createElement("div");
+        detail.innerHTML = `<strong>${taskName}:</strong> ${completed ? "Completado" : "Pendiente"}<br>Comentario: ${comment}`;
+        reportDetailsContainer.appendChild(detail);
+    });
 
-            reportButton.appendChild(reportDetailsContainer);
-            document.getElementById("reports").appendChild(reportButton);
-            alert("Reporte enviado con éxito.");
+    // Agrega el contenedor de detalles al botón y lo muestra en la interfaz
+    reportButton.appendChild(reportDetailsContainer);
+    document.getElementById("reports").appendChild(reportButton);
+
+    // Limpia el checklist después de enviar el reporte
+    clearChecklist();
+
+    // Muestra mensaje de éxito
+    alert("Reporte enviado con éxito y checklist limpiado.");
+}
+
         }
 
         function updatePassword(username) {
