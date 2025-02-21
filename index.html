@@ -14,41 +14,42 @@
         .button:hover { background-color: #5499c7; }
         #login-section { display: flex; flex-direction: column; align-items: center; }
         #checklist-container { display: none; }
+        .task-item, .edit-field { width: 100%; white-space: normal; overflow: visible; word-wrap: break-word; }
+        .comment-field { width: 100%; margin-left: 10px; margin-top: 5px; }
+        .task-checkbox { width: 30px; height: 30px; margin-right: 10px; }
         .report { margin-top: 10px; cursor: pointer; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
         .report-details { display: none; margin-top: 10px; font-size: 14px; }
-        #admin-panel { display: none; }
+        #admin-panel { margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
     <div id="login-section" class="container">
         <h1>Iniciar Sesión</h1>
-        <input type="text" id="login-username" placeholder="Nombre de usuario">
-        <input type="password" id="login-password" placeholder="Contraseña" onkeydown="checkEnter(event)">
+        <input type="text" id="login-username" placeholder="Nombre de usuario" style="width: 100%; margin-bottom: 10px;">
+        <input type="password" id="login-password" placeholder="Contraseña" style="width: 100%; margin-bottom: 10px;">
         <button class="button" onclick="login()">Iniciar sesión</button>
     </div>
 
     <div id="checklist-container" class="container">
         <h1>Checklist de Tareas</h1>
         <ul id="checklist"></ul>
-        
-        <h3>Enviar Reporte</h3>
-        <button class="button" onclick="sendReport()">Enviar Reporte</button>
-        <div id="reports"></div>
+
+        <div id="report-section" style="display: none;">
+            <h3>Al Finalizar las Tareas Enviar Reporte</h3>
+            <button class="button" id="send-report-btn" onclick="sendReport()">Enviar Reporte</button>
+            <div id="reports"></div>
+        </div>
 
         <div id="admin-panel">
-            <h3>Gestión de Usuarios</h3>
-            <input type="text" id="new-username" placeholder="Nuevo usuario">
-            <input type="password" id="new-password" placeholder="Contraseña">
-            <button class="button" onclick="createUser()">Crear Usuario</button>
-
-            <h4>Cambiar Contraseña</h4>
-            <select id="user-select"></select>
-            <input type="password" id="change-password" placeholder="Nueva contraseña">
-            <button class="button" onclick="changePassword()">Cambiar</button>
-
-            <h4>Administrar Tareas</h4>
-            <input type="text" id="new-task" placeholder="Nueva Tarea">
-            <button class="button" onclick="addTaskForUser()">Agregar Tarea</button>
+            <h3>Panel de Administración</h3>
+            <div id="user-management">
+                <h3>Gestión de Usuarios</h3>
+                <input type="text" id="new-username" placeholder="Nombre de nuevo usuario">
+                <input type="password" id="new-password" placeholder="Contraseña de nuevo usuario">
+                <button class="button" onclick="createUser()">Crear Usuario</button>
+                <h4>Lista de Usuarios</h4>
+                <ul id="user-list"></ul>
+            </div>
         </div>
         
         <button class="button" onclick="logout()">Cerrar Sesión</button>
@@ -57,6 +58,7 @@
     <script>
         const adminPassword = "Admin#2414";
         let users = JSON.parse(localStorage.getItem("users")) || {};
+        let reports = JSON.parse(localStorage.getItem("reports")) || [];
         let currentUser = null;
         let isAdmin = false;
 
@@ -72,85 +74,92 @@
             if (users[username] && users[username].password === password) {
                 currentUser = username;
                 isAdmin = users[username].isAdmin || false;
-                
-                document.getElementById("login-section").style.display = "none";
-                document.getElementById("checklist-container").style.display = "block";
+
+                toggleSections(true);
                 loadChecklistForUser(username);
 
-                if (isAdmin) showAdminPanel();
+                if (isAdmin) {
+                    showAdminPanel();
+                    loadReports();
+                } else {
+                    document.getElementById("report-section").style.display = "block";
+                }
             } else {
-                alert("Credenciales incorrectas.");
+                alert("Credenciales incorrectas. Intenta nuevamente.");
             }
-        }
-
-        function loadChecklistForUser(username) {
-            document.getElementById("checklist").innerHTML = "";
-            const userTasks = users[username]?.tasks || [];
-
-            userTasks.forEach(task => {
-                const taskItem = document.createElement("li");
-                taskItem.innerHTML = `
-                    <input type="checkbox" class="task-checkbox">
-                    <span>${task.taskName}</span>
-                    <input type="text" placeholder="Comentario">
-                `;
-                document.getElementById("checklist").appendChild(taskItem);
-            });
         }
 
         function sendReport() {
             if (!currentUser) return;
-            const now = new Date();
-            const timestamp = now.toLocaleString();
 
-            let reportHTML = `<div class="report" onclick="toggleReport(this)">
-                                <strong>Reporte generado el:</strong> ${timestamp}
-                                <div class="report-details">`;
+            const tasks = users[currentUser].tasks || [];
+            const timestamp = new Date().toLocaleString();
+            let report = { user: currentUser, timestamp, tasks: [] };
 
-            document.querySelectorAll(".task-checkbox").forEach((checkbox, index) => {
-                const taskName = checkbox.nextElementSibling.textContent;
-                const comment = checkbox.nextElementSibling.nextElementSibling.value;
-                const status = checkbox.checked ? "Completado" : "No Completado";
-
-                reportHTML += `<p><strong>Tarea:</strong> ${taskName} <br> 
-                               <strong>Estado:</strong> ${status} <br> 
-                               <strong>Comentario:</strong> ${comment || "Sin comentarios"}</p>`;
+            tasks.forEach(task => {
+                report.tasks.push({
+                    name: task.taskName,
+                    completed: task.completed,
+                    comment: task.comment || "Sin comentarios"
+                });
             });
 
-            reportHTML += `</div></div>`;
-            document.getElementById("reports").innerHTML += reportHTML;
+            reports.unshift(report);
+            localStorage.setItem("reports", JSON.stringify(reports));
+
+            loadReports();
+            clearChecklist();
         }
 
-        function toggleReport(reportElement) {
-            let details = reportElement.querySelector(".report-details");
-            details.style.display = details.style.display === "block" ? "none" : "block";
+        function loadReports() {
+            if (!isAdmin) return;
+
+            const reportDiv = document.getElementById("reports");
+            reportDiv.innerHTML = "";
+
+            reports.forEach((report, index) => {
+                const reportItem = document.createElement("div");
+                reportItem.classList.add("report");
+                reportItem.innerHTML = `
+                    <strong>📅 ${report.timestamp} - ${report.user}</strong>
+                    <div class="report-details" id="report-${index}">
+                        ${report.tasks.map(task => `
+                            <p><strong>Tarea:</strong> ${task.name} <br>
+                            <strong>Estado:</strong> ${task.completed ? "✅ Completado" : "❌ No Completado"} <br>
+                            <strong>Comentario:</strong> ${task.comment}
+                            </p>`).join("")}
+                    </div>
+                `;
+                reportItem.addEventListener("click", () => {
+                    const details = document.getElementById(`report-${index}`);
+                    details.style.display = details.style.display === "none" ? "block" : "none";
+                });
+                reportDiv.appendChild(reportItem);
+            });
         }
 
-        function createUser() {
-            const username = document.getElementById("new-username").value.trim();
-            const password = document.getElementById("new-password").value.trim();
-            if (users[username]) return alert("El usuario ya existe.");
+        function clearChecklist() {
+            document.querySelectorAll(".task-checkbox").forEach(checkbox => checkbox.checked = false);
+            document.querySelectorAll(".comment-field").forEach(commentField => commentField.value = "");
 
-            users[username] = { password, isAdmin: false, tasks: [] };
-            localStorage.setItem("users", JSON.stringify(users));
-            alert("Usuario creado.");
-            document.getElementById("new-username").value = "";
-            document.getElementById("new-password").value = "";
+            if (users[currentUser]) {
+                users[currentUser].tasks.forEach(task => {
+                    task.completed = false;
+                    task.comment = "";
+                });
+                localStorage.setItem("users", JSON.stringify(users));
+            }
         }
 
-        function changePassword() {
-            const username = document.getElementById("user-select").value;
-            const newPassword = document.getElementById("change-password").value;
-            users[username].password = newPassword;
-            localStorage.setItem("users", JSON.stringify(users));
-            alert("Contraseña cambiada.");
-            document.getElementById("change-password").value = "";
+        function toggleSections(show) {
+            document.getElementById("login-section").style.display = show ? "none" : "flex";
+            document.getElementById("checklist-container").style.display = show ? "block" : "none";
         }
 
         function logout() {
             currentUser = null;
-            document.getElementById("login-section").style.display = "flex";
-            document.getElementById("checklist-container").style.display = "none";
+            isAdmin = false;
+            toggleSections(false);
         }
     </script>
 </body>
