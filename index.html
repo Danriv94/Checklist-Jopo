@@ -31,7 +31,7 @@
         <h1>Checklist de Tareas</h1>
         <ul id="checklist"></ul>
 
-        <h3>Enviar Reporte</h3>
+        <h3 id="report-title">Enviar Reporte</h3>
         <button id="send-report-btn" class="button" onclick="sendReport()">Enviar Reporte</button>
         <div id="reports"></div>
 
@@ -66,8 +66,8 @@
         }
 
         function login() {
-            const username = document.getElementById("login-username").value;
-            const password = document.getElementById("login-password").value;
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value.trim();
 
             if (users[username] && users[username].password === password) {
                 currentUser = username;
@@ -81,7 +81,8 @@
 
                 if (isAdmin) {
                     showAdminPanel();
-                    document.getElementById("send-report-btn").style.display = "none"; // Ocultar botón de enviar reporte
+                    document.getElementById("send-report-btn").style.display = "none"; // Oculta el botón para el admin
+                    document.getElementById("report-title").style.display = "none"; // Oculta el título "Enviar Reporte"
                 }
             } else {
                 alert("Credenciales incorrectas.");
@@ -110,7 +111,7 @@
             const timestamp = now.toLocaleString();
             let report = { timestamp, details: [] };
 
-            document.querySelectorAll(".task-checkbox").forEach((checkbox, index) => {
+            document.querySelectorAll(".task-checkbox").forEach(checkbox => {
                 const taskName = checkbox.nextElementSibling.textContent;
                 const comment = checkbox.nextElementSibling.nextElementSibling.value;
                 const status = checkbox.checked ? "Completado" : "No Completado";
@@ -118,7 +119,7 @@
                 report.details.push({ taskName, status, comment });
             });
 
-            users["admin"].reports.unshift(report); // Agregar el nuevo reporte arriba
+            users["admin"].reports.unshift(report); // Agregar el nuevo reporte en la parte superior
             localStorage.setItem("users", JSON.stringify(users));
 
             loadReports();
@@ -140,7 +141,7 @@
                 });
 
                 reportHTML += `</div></div>`;
-                document.getElementById("reports").innerHTML += reportHTML;
+                document.getElementById("reports").innerHTML = reportHTML + document.getElementById("reports").innerHTML;
             });
         }
 
