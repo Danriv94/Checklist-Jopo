@@ -30,8 +30,10 @@
     <div id="checklist-container" class="container">
         <h1>Checklist de Tareas</h1>
         <ul id="checklist"></ul>
-        <h3>Enviar Reporte</h3>
-        <button class="button" onclick="sendReport()">Enviar Reporte</button>
+
+        <div id="report-section">
+            <h3>Reportes Generados</h3>
+            <div id="reports"></div>
         </div>
 
         <div id="admin-panel">
@@ -53,7 +55,7 @@
         <button class="button" onclick="logout()">Cerrar Sesión</button>
     </div>
 
-     <script>
+    <script>
         const adminPassword = "Admin#2414";
         let users = JSON.parse(localStorage.getItem("users")) || {};
         let reports = JSON.parse(localStorage.getItem("reports")) || [];
