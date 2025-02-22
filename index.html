@@ -129,25 +129,34 @@
             loadReports();
         }
 
-        function loadReports() {
-            document.getElementById("reports").innerHTML = "";
+         function loadReports() {
+        document.getElementById("reports").innerHTML = "";
 
-            if (!isAdmin) return; 
+        if (!isAdmin) return;
 
-            reports.forEach((report, index) => {
-                let reportHTML = `<div class="report" onclick="toggleReport(this)">
-                                    <strong>Reporte generado el:</strong> ${report.timestamp}
-                                    <div class="report-details">`;
+        reports.forEach((report, index) => {
+            let reportHTML = `<div class="report" onclick="toggleReport(this)">
+                                <strong>Reporte generado el:</strong> ${report.timestamp}
+                                <button class="button" onclick="deleteReport(${index}, event)">🗑️ Eliminar</button>
+                                <div class="report-details">`;
 
-                report.details.forEach(detail => {
-                    reportHTML += `<p><strong>Tarea:</strong> ${detail.taskName} <br> 
-                                   <strong>Estado:</strong> ${detail.status} <br> 
-                                   <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
-                });
-
-                reportHTML += `</div></div>`;
-                document.getElementById("reports").innerHTML += reportHTML;
+            report.details.forEach(detail => {
+                reportHTML += `<p><strong>Tarea:</strong> ${detail.taskName} <br> 
+                               <strong>Estado:</strong> ${detail.status} <br> 
+                               <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
             });
+
+            reportHTML += `</div></div>`;
+            document.getElementById("reports").innerHTML += reportHTML;
+        });
+    }
+
+    function deleteReport(index, event) {
+        event.stopPropagation(); // Evita que se expanda el reporte al hacer clic en el botón
+        if (confirm("¿Estás seguro de que quieres eliminar este reporte?")) {
+            reports.splice(index, 1);
+            localStorage.setItem("reports", JSON.stringify(reports));
+            loadReports();
         }
 
         function toggleReport(reportElement) {
