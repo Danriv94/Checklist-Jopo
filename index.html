@@ -17,7 +17,7 @@
         .report { margin-top: 10px; cursor: pointer; background-color: #f9f9f9; padding: 10px; border-radius: 5px; position: relative; }
         .report-details { display: none; margin-top: 10px; font-size: 14px; }
         #admin-panel { display: none; }
-        .delete-btn { position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; cursor: pointer; padding: 5px; font-size: 12px; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; cursor: pointer; padding: 5px; font-size: 12px; display: none; }
     </style>
 </head>
 <body>
@@ -90,6 +90,26 @@
             }
         }
 
+        function loadChecklistForUser(username) {
+            document.getElementById("checklist").innerHTML = "";
+            const userTasks = users[username]?.tasks || [];
+
+            if (userTasks.length === 0) {
+                document.getElementById("checklist").innerHTML = "<p>No hay tareas asignadas.</p>";
+                return;
+            }
+
+            userTasks.forEach(task => {
+                const taskItem = document.createElement("li");
+                taskItem.innerHTML = `
+                    <input type="checkbox" class="task-checkbox">
+                    <span>${task.taskName}</span>
+                    <input type="text" placeholder="Comentario">
+                `;
+                document.getElementById("checklist").appendChild(taskItem);
+            });
+        }
+
         function sendReport() {
             if (!currentUser || isAdmin) return;
 
@@ -142,13 +162,10 @@
                 reportHTML += `</div>`;
                 document.getElementById("reports").innerHTML += reportHTML;
             });
-        }
 
-        function deleteReport(index) {
-            if (!isAdmin) return;
-            reports.splice(index, 1);
-            localStorage.setItem("reports", JSON.stringify(reports));
-            loadReports();
+            if (isAdmin) {
+                document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = "block");
+            }
         }
 
         function toggleReport(reportElement) {
