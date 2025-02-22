@@ -14,9 +14,10 @@
         .button:hover { background-color: #5499c7; }
         #login-section { display: flex; flex-direction: column; align-items: center; }
         #checklist-container { display: none; }
-        .report { margin-top: 10px; cursor: pointer; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
+        .report { margin-top: 10px; cursor: pointer; background-color: #f9f9f9; padding: 10px; border-radius: 5px; position: relative; }
         .report-details { display: none; margin-top: 10px; font-size: 14px; }
         #admin-panel { display: none; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; cursor: pointer; padding: 5px; font-size: 12px; display: none; }
     </style>
 </head>
 <body>
@@ -89,21 +90,6 @@
             }
         }
 
-        function loadChecklistForUser(username) {
-            document.getElementById("checklist").innerHTML = "";
-            const userTasks = users[username]?.tasks || [];
-
-            userTasks.forEach(task => {
-                const taskItem = document.createElement("li");
-                taskItem.innerHTML = `
-                    <input type="checkbox" class="task-checkbox">
-                    <span>${task.taskName}</span>
-                    <input type="text" placeholder="Comentario">
-                `;
-                document.getElementById("checklist").appendChild(taskItem);
-            });
-        }
-
         function sendReport() {
             if (!currentUser || isAdmin) return; 
 
@@ -127,6 +113,8 @@
             reports.unshift(report); 
             localStorage.setItem("reports", JSON.stringify(reports));
             loadReports();
+
+            alert("Reporte Enviado"); // Mensaje de confirmación
         }
 
         function loadReports() {
@@ -145,9 +133,28 @@
                                    <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
                 });
 
-                reportHTML += `</div></div>`;
+                reportHTML += `</div>`;
+
+                // Agregar botón de eliminar solo para el admin
+                if (isAdmin) {
+                    reportHTML += `<button class="delete-btn" onclick="deleteReport(${index})">X</button>`;
+                }
+
+                reportHTML += `</div>`;
                 document.getElementById("reports").innerHTML += reportHTML;
             });
+
+            // Mostrar botones de eliminar solo si es admin
+            if (isAdmin) {
+                document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = "block");
+            }
+        }
+
+        function deleteReport(index) {
+            if (!isAdmin) return;
+            reports.splice(index, 1);
+            localStorage.setItem("reports", JSON.stringify(reports));
+            loadReports();
         }
 
         function toggleReport(reportElement) {
