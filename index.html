@@ -32,6 +32,8 @@
         <h1>Checklist de Tareas</h1>
         <ul id="checklist"></ul>
 
+        <button class="button" onclick="sendReport()">Enviar Reporte</button>
+
         <div id="report-section">
             <h3>Reportes Generados</h3>
             <div id="reports"></div>
@@ -75,10 +77,10 @@
             if (users[username] && users[username].password === password) {
                 currentUser = username;
                 isAdmin = users[username].isAdmin || false;
-                
+
                 document.getElementById("login-section").style.display = "none";
                 document.getElementById("checklist-container").style.display = "block";
-                
+
                 loadChecklistForUser(username);
                 loadReports();
 
@@ -90,8 +92,28 @@
             }
         }
 
+        function loadChecklistForUser(username) {
+            document.getElementById("checklist").innerHTML = "";
+            const userTasks = users[username]?.tasks || [];
+
+            if (userTasks.length === 0) {
+                document.getElementById("checklist").innerHTML = "<p>No hay tareas asignadas.</p>";
+                return;
+            }
+
+            userTasks.forEach(task => {
+                const taskItem = document.createElement("li");
+                taskItem.innerHTML = `
+                    <input type="checkbox" class="task-checkbox">
+                    <span>${task.taskName}</span>
+                    <input type="text" placeholder="Comentario">
+                `;
+                document.getElementById("checklist").appendChild(taskItem);
+            });
+        }
+
         function sendReport() {
-            if (!currentUser || isAdmin) return; 
+            if (!currentUser || isAdmin) return;
 
             const now = new Date();
             const timestamp = now.toLocaleString();
@@ -110,21 +132,19 @@
                 report.details.push({ taskName, status, comment });
             });
 
-            reports.unshift(report); 
+            reports.unshift(report);
             localStorage.setItem("reports", JSON.stringify(reports));
             loadReports();
 
-            alert("Reporte Enviado"); // Mensaje de confirmación
+            alert("Reporte Enviado");
         }
 
         function loadReports() {
             document.getElementById("reports").innerHTML = "";
 
-            if (!isAdmin) return; 
-
             reports.forEach((report, index) => {
                 let reportHTML = `<div class="report" onclick="toggleReport(this)">
-                                    <strong>Reporte generado el:</strong> ${report.timestamp}
+                                    <strong>Reporte generado el:</strong> ${report.timestamp} por ${report.user}
                                     <div class="report-details">`;
 
                 report.details.forEach(detail => {
@@ -135,7 +155,6 @@
 
                 reportHTML += `</div>`;
 
-                // Agregar botón de eliminar solo para el admin
                 if (isAdmin) {
                     reportHTML += `<button class="delete-btn" onclick="deleteReport(${index})">X</button>`;
                 }
@@ -144,7 +163,6 @@
                 document.getElementById("reports").innerHTML += reportHTML;
             });
 
-            // Mostrar botones de eliminar solo si es admin
             if (isAdmin) {
                 document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = "block");
             }
