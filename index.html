@@ -166,7 +166,6 @@
             if (isAdmin) {
                 document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = "block");
             }
-        }
 
         function deleteReport(reportId) {
     if (!isAdmin) return; // Solo el admin puede eliminar reportes
@@ -175,10 +174,8 @@
     localStorage.setItem("reports", JSON.stringify(reports)); // Guardar nueva lista
     loadReports(); // Recargar reportes en la interfaz
             
-        }
+        }    
             
-}
-
         function toggleReport(reportElement) {
             let details = reportElement.querySelector(".report-details");
             details.style.display = details.style.display === "block" ? "none" : "block";
