@@ -168,6 +168,17 @@
             }
         }
 
+        function deleteReport(reportId) {
+    if (!isAdmin) return; // Solo el admin puede eliminar reportes
+
+    reports = reports.filter(report => report.id !== reportId); // Filtrar reportes sin el eliminado
+    localStorage.setItem("reports", JSON.stringify(reports)); // Guardar nueva lista
+    loadReports(); // Recargar reportes en la interfaz
+            
+        }
+            
+}
+
         function toggleReport(reportElement) {
             let details = reportElement.querySelector(".report-details");
             details.style.display = details.style.display === "block" ? "none" : "block";
