@@ -84,9 +84,7 @@
                 loadChecklistForUser(username);
                 loadReports();
 
-                if (isAdmin) {
-                    document.getElementById("admin-panel").style.display = "block";
-                }
+                document.getElementById("admin-panel").style.display = isAdmin ? "block" : "none";
             } else {
                 alert("Credenciales incorrectas.");
             }
@@ -124,7 +122,7 @@
                 details: []
             };
 
-            document.querySelectorAll(".task-checkbox").forEach((checkbox, index) => {
+            document.querySelectorAll(".task-checkbox").forEach((checkbox) => {
                 const taskName = checkbox.nextElementSibling.textContent;
                 const comment = checkbox.nextElementSibling.nextElementSibling.value;
                 const status = checkbox.checked ? "Completado" : "No Completado";
@@ -142,7 +140,9 @@
         function loadReports() {
             document.getElementById("reports").innerHTML = "";
 
-            reports.forEach((report, index) => {
+            let filteredReports = isAdmin ? reports : reports.filter(r => r.user === currentUser);
+
+            filteredReports.forEach((report, index) => {
                 let reportHTML = `<div class="report" onclick="toggleReport(this)">
                                     <strong>Reporte generado el:</strong> ${report.timestamp} por ${report.user}
                                     <div class="report-details">`;
@@ -166,13 +166,6 @@
             if (isAdmin) {
                 document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = "block");
             }
-        }
-
-        function deleteReport(index) {
-            if (!isAdmin) return;
-            reports.splice(index, 1);
-            localStorage.setItem("reports", JSON.stringify(reports));
-            loadReports();
         }
 
         function toggleReport(reportElement) {
