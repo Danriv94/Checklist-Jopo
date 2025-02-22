@@ -133,25 +133,24 @@
     }
 
     function loadReports() {
-        if (!isAdmin) return;
+            document.getElementById("reports").innerHTML = "";
 
-        document.getElementById("reports").innerHTML = "";
+            if (!isAdmin) return; 
 
-        reports.forEach((report, index) => {
-            let reportHTML = `<div class="report">
-                                <strong>Reporte generado el:</strong> ${report.timestamp}
-                                <button class="button" onclick="deleteReport(${index})">Eliminar Reporte</button>
-                                <div class="report-details">`;
+            reports.forEach((report, index) => {
+                let reportHTML = `<div class="report" onclick="toggleReport(this)">
+                                    <strong>Reporte generado el:</strong> ${report.timestamp}
+                                    <div class="report-details">`;
 
-            report.details.forEach(detail => {
-                reportHTML += `<p><strong>Tarea:</strong> ${detail.taskName} <br> 
-                               <strong>Estado:</strong> ${detail.status} <br> 
-                               <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
+                report.details.forEach(detail => {
+                    reportHTML += `<p><strong>Tarea:</strong> ${detail.taskName} <br> 
+                                   <strong>Estado:</strong> ${detail.status} <br> 
+                                   <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
+                });
+
+                reportHTML += `</div></div>`;
+                document.getElementById("reports").innerHTML += reportHTML;
             });
-
-            reportHTML += `</div></div>`;
-            document.getElementById("reports").innerHTML += reportHTML;
-        });
     }
 
     function deleteReport(index) {
