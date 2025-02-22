@@ -23,7 +23,7 @@
     <div id="login-section" class="container">
         <h1>Iniciar Sesión</h1>
         <input type="text" id="login-username" placeholder="Nombre de usuario">
-        <input type="password" id="login-password" placeholder="Contraseña" onkeydown="checkEnter(event)">
+        <input type="password" id="login-password" placeholder="Contraseña">
         <button class="button" onclick="login()">Iniciar sesión</button>
     </div>
 
@@ -31,9 +31,10 @@
         <h1>Checklist de Tareas</h1>
         <ul id="checklist"></ul>
 
-        <h3 id="report-title">Enviar Reporte</h3>
-        <button id="send-report-btn" class="button" onclick="sendReport()">Enviar Reporte</button>
-        <div id="reports"></div>
+        <div id="report-section">
+            <h3>Reportes Generados</h3>
+            <div id="reports"></div>
+        </div>
 
         <div id="admin-panel">
             <h3>Gestión de Usuarios</h3>
@@ -57,32 +58,31 @@
     <script>
         const adminPassword = "Admin#2414";
         let users = JSON.parse(localStorage.getItem("users")) || {};
+        let reports = JSON.parse(localStorage.getItem("reports")) || [];
         let currentUser = null;
         let isAdmin = false;
 
         if (!users["admin"]) {
-            users["admin"] = { password: adminPassword, isAdmin: true, tasks: [], reports: [] };
+            users["admin"] = { password: adminPassword, isAdmin: true, tasks: [] };
             localStorage.setItem("users", JSON.stringify(users));
         }
 
         function login() {
-            const username = document.getElementById("login-username").value.trim();
-            const password = document.getElementById("login-password").value.trim();
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
 
             if (users[username] && users[username].password === password) {
                 currentUser = username;
                 isAdmin = users[username].isAdmin || false;
-
+                
                 document.getElementById("login-section").style.display = "none";
                 document.getElementById("checklist-container").style.display = "block";
-
+                
                 loadChecklistForUser(username);
                 loadReports();
 
                 if (isAdmin) {
-                    showAdminPanel();
-                    document.getElementById("send-report-btn").style.display = "none"; // Oculta el botón para el admin
-                    document.getElementById("report-title").style.display = "none"; // Oculta el título "Enviar Reporte"
+                    document.getElementById("admin-panel").style.display = "block";
                 }
             } else {
                 alert("Credenciales incorrectas.");
@@ -105,13 +105,18 @@
         }
 
         function sendReport() {
-            if (!currentUser || isAdmin) return;
+            if (!currentUser || isAdmin) return; 
 
             const now = new Date();
             const timestamp = now.toLocaleString();
-            let report = { timestamp, details: [] };
 
-            document.querySelectorAll(".task-checkbox").forEach(checkbox => {
+            let report = {
+                timestamp,
+                user: currentUser,
+                details: []
+            };
+
+            document.querySelectorAll(".task-checkbox").forEach((checkbox, index) => {
                 const taskName = checkbox.nextElementSibling.textContent;
                 const comment = checkbox.nextElementSibling.nextElementSibling.value;
                 const status = checkbox.checked ? "Completado" : "No Completado";
@@ -119,29 +124,29 @@
                 report.details.push({ taskName, status, comment });
             });
 
-            users["admin"].reports.unshift(report); // Agregar el nuevo reporte en la parte superior
-            localStorage.setItem("users", JSON.stringify(users));
-
+            reports.unshift(report); 
+            localStorage.setItem("reports", JSON.stringify(reports));
             loadReports();
         }
 
         function loadReports() {
-            if (!isAdmin) return;
             document.getElementById("reports").innerHTML = "";
 
-            users["admin"].reports.forEach(report => {
+            if (!isAdmin) return; 
+
+            reports.forEach((report, index) => {
                 let reportHTML = `<div class="report" onclick="toggleReport(this)">
                                     <strong>Reporte generado el:</strong> ${report.timestamp}
                                     <div class="report-details">`;
 
-                report.details.forEach(task => {
-                    reportHTML += `<p><strong>Tarea:</strong> ${task.taskName} <br> 
-                                   <strong>Estado:</strong> ${task.status} <br> 
-                                   <strong>Comentario:</strong> ${task.comment || "Sin comentarios"}</p>`;
+                report.details.forEach(detail => {
+                    reportHTML += `<p><strong>Tarea:</strong> ${detail.taskName} <br> 
+                                   <strong>Estado:</strong> ${detail.status} <br> 
+                                   <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
                 });
 
                 reportHTML += `</div></div>`;
-                document.getElementById("reports").innerHTML = reportHTML + document.getElementById("reports").innerHTML;
+                document.getElementById("reports").innerHTML += reportHTML;
             });
         }
 
