@@ -148,6 +148,15 @@
                 reportHTML += `</div></div>`;
                 document.getElementById("reports").innerHTML += reportHTML;
             });
+         }
+
+    function deleteReport(index, event) {
+        event.stopPropagation(); // Evita que se expanda el reporte al hacer clic en el botón
+        if (confirm("¿Estás seguro de que quieres eliminar este reporte?")) {
+            reports.splice(index, 1);
+            localStorage.setItem("reports", JSON.stringify(reports));
+            loadReports();
+            
         }
 
         function toggleReport(reportElement) {
