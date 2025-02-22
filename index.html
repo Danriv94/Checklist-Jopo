@@ -56,80 +56,68 @@
     </div>
 
     <script>
-        const adminPassword = "Admin#2414";
-        let users = JSON.parse(localStorage.getItem("users")) || {};
-        let reports = JSON.parse(localStorage.getItem("reports")) || [];
-        let currentUser = null;
-        let isAdmin = false;
+    const adminPassword = "Admin#2414";
+    let users = JSON.parse(localStorage.getItem("users")) || {};
+    let reports = JSON.parse(localStorage.getItem("reports")) || [];
+    let currentUser = null;
+    let isAdmin = false;
 
-        if (!users["admin"]) {
-            users["admin"] = { password: adminPassword, isAdmin: true, tasks: [] };
-            localStorage.setItem("users", JSON.stringify(users));
-        }
+    if (!users["admin"]) {
+        users["admin"] = { password: adminPassword, isAdmin: true, tasks: [] };
+        localStorage.setItem("users", JSON.stringify(users));
+    }
 
-        function login() {
-            const username = document.getElementById("login-username").value;
-            const password = document.getElementById("login-password").value;
+    function login() {
+        const username = document.getElementById("login-username").value;
+        const password = document.getElementById("login-password").value;
 
-            if (users[username] && users[username].password === password) {
-                currentUser = username;
-                isAdmin = users[username].isAdmin || false;
-                
-                document.getElementById("login-section").style.display = "none";
-                document.getElementById("checklist-container").style.display = "block";
-                
-                loadChecklistForUser(username);
-                loadReports();
+        if (users[username] && users[username].password === password) {
+            currentUser = username;
+            isAdmin = users[username].isAdmin || false;
 
-                if (isAdmin) {
-                    document.getElementById("admin-panel").style.display = "block";
-                }
-            } else {
-                alert("Credenciales incorrectas.");
-            }
-        }
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("checklist-container").style.display = "block";
 
-        function loadChecklistForUser(username) {
-            document.getElementById("checklist").innerHTML = "";
-            const userTasks = users[username]?.tasks || [];
-
-            userTasks.forEach(task => {
-                const taskItem = document.createElement("li");
-                taskItem.innerHTML = `
-                    <input type="checkbox" class="task-checkbox">
-                    <span>${task.taskName}</span>
-                    <input type="text" placeholder="Comentario">
-                `;
-                document.getElementById("checklist").appendChild(taskItem);
-            });
-        }
-
-        function sendReport() {
-            if (!currentUser || isAdmin) return; 
-
-            const now = new Date();
-            const timestamp = now.toLocaleString();
-
-            let report = {
-                timestamp,
-                user: currentUser,
-                details: []
-            };
-
-            document.querySelectorAll(".task-checkbox").forEach((checkbox, index) => {
-                const taskName = checkbox.nextElementSibling.textContent;
-                const comment = checkbox.nextElementSibling.nextElementSibling.value;
-                const status = checkbox.checked ? "Completado" : "No Completado";
-
-                report.details.push({ taskName, status, comment });
-            });
-
-            reports.unshift(report); 
-            localStorage.setItem("reports", JSON.stringify(reports));
+            loadChecklistForUser(username);
             loadReports();
-        }
 
-         function loadReports() {
+            if (isAdmin) {
+                document.getElementById("admin-panel").style.display = "block";
+            }
+        } else {
+            alert("Credenciales incorrectas.");
+        }
+    }
+
+    function sendReport() {
+        if (!currentUser || isAdmin) return;
+
+        const now = new Date();
+        const timestamp = now.toLocaleString();
+
+        let report = {
+            timestamp,
+            user: currentUser,
+            details: []
+        };
+
+        document.querySelectorAll(".task-checkbox").forEach((checkbox, index) => {
+            const taskName = checkbox.nextElementSibling.textContent;
+            const comment = checkbox.nextElementSibling.nextElementSibling.value;
+            const status = checkbox.checked ? "Completado" : "No Completado";
+
+            report.details.push({ taskName, status, comment });
+        });
+
+        reports.unshift(report); 
+        localStorage.setItem("reports", JSON.stringify(reports));
+        loadReports();
+
+        // Muestra mensaje de confirmación al usuario regular
+        alert("✅ Reporte Enviado");
+    }
+
+    function loadReports() {
         document.getElementById("reports").innerHTML = "";
 
         if (!isAdmin) return;
@@ -158,17 +146,19 @@
             localStorage.setItem("reports", JSON.stringify(reports));
             loadReports();
         }
+    }
 
-        function toggleReport(reportElement) {
-            let details = reportElement.querySelector(".report-details");
-            details.style.display = details.style.display === "block" ? "none" : "block";
-        }
+    function toggleReport(reportElement) {
+        let details = reportElement.querySelector(".report-details");
+        details.style.display = details.style.display === "block" ? "none" : "block";
+    }
 
-        function logout() {
-            currentUser = null;
-            document.getElementById("login-section").style.display = "flex";
-            document.getElementById("checklist-container").style.display = "none";
-        }
-    </script>
+    function logout() {
+        currentUser = null;
+        document.getElementById("login-section").style.display = "flex";
+        document.getElementById("checklist-container").style.display = "none";
+    }
+</script>
+
 </body>
 </html>
