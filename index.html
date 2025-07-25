@@ -1,183 +1,220 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checklist del Usuario</title>
-    <style>
-        body { font-family: Oswald, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #d6eaf8; margin: 0; }
-        .container { width: 100%; max-width: 600px; padding: 20px; background-color: white; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        h1, h3 { text-align: center; }
-        ul { list-style: none; padding: 0; }
-        li { margin: 10px 0; display: flex; align-items: center; flex-wrap: wrap; }
-        .button { padding: 10px 20px; background-color: #85c1e9; color: white; border: none; cursor: pointer; margin-top: 10px; width: 100%; }
-        .button:hover { background-color: #5499c7; }
-        #login-section { display: flex; flex-direction: column; align-items: center; }
-        #checklist-container { display: none; }
-        .report { margin-top: 10px; cursor: pointer; background-color: #f9f9f9; padding: 10px; border-radius: 5px; position: relative; }
-        .report-details { display: none; margin-top: 10px; font-size: 14px; }
-        #admin-panel { display: none; }
-        .delete-btn { position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; cursor: pointer; padding: 5px; font-size: 12px; display: none; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist del Usuario</title>
+  <style>
+    body { font-family: Oswald, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #d6eaf8; margin: 0; }
+    .container { width: 100%; max-width: 600px; padding: 20px; background: white; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h1, h3 { text-align: center; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; display: flex; align-items: center; flex-wrap: wrap; }
+    .button { padding: 10px; background: #85c1e9; color: white; border: none; cursor: pointer; width: 100%; margin-top: 10px; }
+    .button:hover { background: #5499c7; }
+    .report { margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px; position: relative; cursor: pointer; }
+    .report-details { display: none; margin-top: 10px; font-size: 14px; }
+    #admin-panel { display: none; }
+    .delete-btn { position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; padding: 5px; font-size: 12px; display: none; }
+  </style>
 </head>
 <body>
-    <div id="login-section" class="container">
-        <h1>Iniciar Sesión</h1>
-        <input type="text" id="login-username" placeholder="Nombre de usuario">
-        <input type="password" id="login-password" placeholder="Contraseña">
-        <button class="button" onclick="login()">Iniciar sesión</button>
-    </div>
+<div id="login-section" class="container">
+  <h1>Iniciar Sesión</h1>
+  <input id="login-username" placeholder="Usuario" />
+  <input id="login-password" type="password" placeholder="Contraseña" />
+  <button class="button" onclick="login()">Iniciar sesión</button>
+</div>
 
-    <div id="checklist-container" class="container">
-        <h1>Checklist de Tareas</h1>
-        <ul id="checklist"></ul>
+<div id="checklist-container" class="container" style="display:none;">
+  <h1>Checklist de Tareas</h1>
+  <ul id="checklist"></ul>
+  <button class="button" onclick="sendReport()">Enviar Reporte</button>
 
-        <button class="button" onclick="sendReport()">Enviar Reporte</button>
+  <div id="report-section">
+    <h3>Reportes Generados</h3>
+    <div id="reports"></div>
+  </div>
 
-        <div id="report-section">
-            <h3>Reportes Generados</h3>
-            <div id="reports"></div>
-        </div>
+  <div id="admin-panel">
+    <h3>Gestión de Usuarios</h3>
+    <input id="new-username" placeholder="Nuevo usuario" />
+    <input id="new-password" type="password" placeholder="Contraseña" />
+    <button class="button" onclick="createUser()">Crear Usuario</button>
 
-        <div id="admin-panel">
-            <h3>Gestión de Usuarios</h3>
-            <input type="text" id="new-username" placeholder="Nuevo usuario">
-            <input type="password" id="new-password" placeholder="Contraseña">
-            <button class="button" onclick="createUser()">Crear Usuario</button>
+    <h4>Cambiar Contraseña</h4>
+    <select id="user-select"></select>
+    <input id="change-password" type="password" placeholder="Nueva contraseña" />
+    <button class="button" onclick="changePassword()">Cambiar</button>
 
-            <h4>Cambiar Contraseña</h4>
-            <select id="user-select"></select>
-            <input type="password" id="change-password" placeholder="Nueva contraseña">
-            <button class="button" onclick="changePassword()">Cambiar</button>
+    <h4>Administrar Tareas</h4>
+    <input id="new-task" placeholder="Nueva Tarea" />
+    <button class="button" onclick="addTaskForUser()">Agregar Tarea</button>
+  </div>
 
-            <h4>Administrar Tareas</h4>
-            <input type="text" id="new-task" placeholder="Nueva Tarea">
-            <button class="button" onclick="addTaskForUser()">Agregar Tarea</button>
-        </div>
-        
-        <button class="button" onclick="logout()">Cerrar Sesión</button>
-    </div>
+  <button class="button" onclick="logout()">Cerrar Sesión</button>
+</div>
 
-    <script>
-        const adminPassword = "Admin#2414";
-        let users = JSON.parse(localStorage.getItem("users")) || {};
-        let reports = JSON.parse(localStorage.getItem("reports")) || [];
-        let currentUser = null;
-        let isAdmin = false;
+<script>
+const adminPassword = "Admin#2414";
+let users = JSON.parse(localStorage.getItem("users")) || {};
+let reports = JSON.parse(localStorage.getItem("reports")) || [];
+let currentUser = null;
+let isAdmin = false;
 
-        if (!users["admin"]) {
-            users["admin"] = { password: adminPassword, isAdmin: true, tasks: [] };
-            localStorage.setItem("users", JSON.stringify(users));
-        }
+if (!users.admin) {
+  users.admin = { password: adminPassword, isAdmin: true, tasks: [] };
+  saveUsers();
+}
 
-        function login() {
-            const username = document.getElementById("login-username").value;
-            const password = document.getElementById("login-password").value;
+function saveUsers() {
+  localStorage.setItem("users", JSON.stringify(users));
+}
 
-            if (users[username] && users[username].password === password) {
-                currentUser = username;
-                isAdmin = users[username].isAdmin || false;
+function saveReports() {
+  localStorage.setItem("reports", JSON.stringify(reports));
+}
 
-                document.getElementById("login-section").style.display = "none";
-                document.getElementById("checklist-container").style.display = "block";
+function login() {
+  const username = document.getElementById("login-username").value.trim();
+  const password = document.getElementById("login-password").value;
 
-                loadChecklistForUser(username);
-                loadReports();
+  if (users[username] && users[username].password === password) {
+    currentUser = username;
+    isAdmin = !!users[username].isAdmin;
 
-                document.getElementById("admin-panel").style.display = isAdmin ? "block" : "none";
-            } else {
-                alert("Credenciales incorrectas.");
-            }
-        }
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("checklist-container").style.display = "block";
 
-        function loadChecklistForUser(username) {
-            document.getElementById("checklist").innerHTML = "";
-            const userTasks = users[username]?.tasks || [];
+    document.getElementById("admin-panel").style.display = isAdmin ? "block" : "none";
 
-            if (userTasks.length === 0) {
-                document.getElementById("checklist").innerHTML = "<p>No hay tareas asignadas.</p>";
-                return;
-            }
+    loadChecklist();
+    loadReports();
+    updateUserSelect();
+  } else {
+    alert("Credenciales incorrectas");
+  }
+}
 
-            userTasks.forEach(task => {
-                const taskItem = document.createElement("li");
-                taskItem.innerHTML = `
-                    <input type="checkbox" class="task-checkbox">
-                    <span>${task.taskName}</span>
-                    <input type="text" placeholder="Comentario">
-                `;
-                document.getElementById("checklist").appendChild(taskItem);
-            });
-        }
+function loadChecklist() {
+  const list = document.getElementById("checklist");
+  list.innerHTML = "";
+  const tasks = users[currentUser].tasks || [];
+  if (!tasks.length) {
+    list.innerHTML = "<p>No hay tareas.</p>";
+    return;
+  }
 
-        function sendReport() {
-            if (!currentUser || isAdmin) return;
+  tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <input type="checkbox" class="task-checkbox">
+      <span>${task.taskName}</span>
+      <input type="text" placeholder="Comentario">
+    `;
+    list.appendChild(li);
+  });
+}
 
-            const now = new Date();
-            const timestamp = now.toLocaleString();
+function sendReport() {
+  if (!currentUser || isAdmin) return;
 
-            let report = {
-                timestamp,
-                user: currentUser,
-                details: []
-            };
+  const report = {
+    timestamp: new Date().toLocaleString(),
+    user: currentUser,
+    details: []
+  };
 
-            document.querySelectorAll(".task-checkbox").forEach((checkbox) => {
-                const taskName = checkbox.nextElementSibling.textContent;
-                const comment = checkbox.nextElementSibling.nextElementSibling.value;
-                const status = checkbox.checked ? "Completado" : "No Completado";
+  document.querySelectorAll(".task-checkbox").forEach(box => {
+    const taskName = box.nextElementSibling.textContent;
+    const comment = box.nextElementSibling.nextElementSibling.value;
+    const status = box.checked ? "Completado" : "No Completado";
+    report.details.push({ taskName, status, comment });
+  });
 
-                report.details.push({ taskName, status, comment });
-            });
+  reports.unshift(report);
+  saveReports();
+  loadReports();
+  alert("Reporte enviado");
+}
 
-            reports.unshift(report);
-            localStorage.setItem("reports", JSON.stringify(reports));
-            loadReports();
+function loadReports() {
+  const reportsDiv = document.getElementById("reports");
+  reportsDiv.innerHTML = "";
 
-            alert("Reporte Enviado");
-        }
+  const visibleReports = isAdmin ? reports : reports.filter(r => r.user === currentUser);
 
-        function loadReports() {
-            document.getElementById("reports").innerHTML = "";
+  visibleReports.forEach((r, i) => {
+    const div = document.createElement("div");
+    div.className = "report";
+    div.onclick = e => {
+      if (e.target.classList.contains('delete-btn')) return;
+      const details = div.querySelector(".report-details");
+      details.style.display = details.style.display === "block" ? "none" : "block";
+    };
+    div.innerHTML = `<strong>Fecha:</strong> ${r.timestamp} | <strong>Usuario:</strong> ${r.user}
+      <div class="report-details">${r.details.map(d =>
+        `<p><strong>Tarea:</strong> ${d.taskName}<br><strong>Estado:</strong> ${d.status}<br><strong>Comentario:</strong> ${d.comment || "Sin comentarios"}</p>`
+      ).join('')}</div>
+      ${isAdmin ? `<button class="delete-btn" onclick="deleteReport(${i})">X</button>` : ''}`;
+    reportsDiv.appendChild(div);
+  });
 
-            let filteredReports = isAdmin ? reports : reports.filter(r => r.user === currentUser);
+  if (isAdmin) document.querySelectorAll(".delete-btn").forEach(b => b.style.display = "block");
+}
 
-            filteredReports.forEach((report, index) => {
-                let reportHTML = `<div class="report" onclick="toggleReport(this)">
-                                    <strong>Reporte generado el:</strong> ${report.timestamp} por ${report.user}
-                                    <div class="report-details">`;
+function deleteReport(index) {
+  reports.splice(index, 1);
+  saveReports();
+  loadReports();
+}
 
-                report.details.forEach(detail => {
-                    reportHTML += `<p><strong>Tarea:</strong> ${detail.taskName} <br> 
-                                   <strong>Estado:</strong> ${detail.status} <br> 
-                                   <strong>Comentario:</strong> ${detail.comment || "Sin comentarios"}</p>`;
-                });
+function createUser() {
+  const u = document.getElementById("new-username").value.trim();
+  const p = document.getElementById("new-password").value;
+  if (!u || !p) return alert("Datos incompletos");
+  if (users[u]) return alert("Usuario ya existe");
+  users[u] = { password: p, isAdmin: false, tasks: [] };
+  saveUsers();
+  updateUserSelect();
+  alert("Usuario creado");
+}
 
-                reportHTML += `</div>`;
+function updateUserSelect() {
+  const sel = document.getElementById("user-select");
+  sel.innerHTML = "";
+  Object.keys(users).filter(u => u !== "admin").forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u;
+    opt.text = u;
+    sel.add(opt);
+  });
+}
 
-                if (isAdmin) {
-                    reportHTML += `<button class="delete-btn" onclick="deleteReport(${index})">X</button>`;
-                }
+function changePassword() {
+  const sel = document.getElementById("user-select").value;
+  const newP = document.getElementById("change-password").value;
+  if (!sel || !newP) return alert("Datos incompletos");
+  users[sel].password = newP;
+  saveUsers();
+  alert("Contraseña cambiada");
+}
 
-                reportHTML += `</div>`;
-                document.getElementById("reports").innerHTML += reportHTML;
-            });
+function addTaskForUser() {
+  const sel = document.getElementById("user-select").value;
+  const newTask = document.getElementById("new-task").value.trim();
+  if (!sel || !newTask) return alert("Datos incompletos");
+  users[sel].tasks.push({ taskName: newTask });
+  saveUsers();
+  alert("Tarea agregada");
+  if (sel === currentUser) loadChecklist();
+}
 
-            if (isAdmin) {
-                document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = "block");
-            }
-        }
-
-        function toggleReport(reportElement) {
-            let details = reportElement.querySelector(".report-details");
-            details.style.display = details.style.display === "block" ? "none" : "block";
-        }
-
-        function logout() {
-            currentUser = null;
-            document.getElementById("login-section").style.display = "flex";
-            document.getElementById("checklist-container").style.display = "none";
-        }
-    </script>
+function logout() {
+  currentUser = null;
+  document.getElementById("login-section").style.display = "flex";
+  document.getElementById("checklist-container").style.display = "none";
+}
+</script>
 </body>
 </html>
